@@ -1,52 +1,32 @@
 import os
 
 
-def md_file_count(folder_path: str) -> int:
+def get_md_file_count_in_folder(folder_path: str) -> int:
     """
-    Get the number of .md files in each folder.
-        Args:
-            folder_path (str): Path to the folder
-        Returns:
-            int: Total number of .md files in the folder
+    Count the number of .md files in a folder, including subfolders.
+    Args:
+        folder_path (str): The path to the folder.
+    Returns:
+        int: The count of .md files.
     """
-    # Get a list of folders within the specific folder
-    folder_list = [f for f in os.listdir(
-        folder_path) if os.path.isdir(os.path.join(folder_path, f))]
-
-    # Initialize a variable to store the total number of .md files
-    result = 0
-
-    for folder in folder_list:
-        folder_dir = os.path.join(folder_path, folder)
-        for _, _, files in os.walk(folder_dir):
-            for file in files:
-                if file.endswith(".md"):
-                    result += 1
-
-    return result
+    md_file_count = 0
+    for root, _, files in os.walk(folder_path):
+        md_file_count += sum(1 for file in files if file.endswith('.md'))
+    return md_file_count
 
 
-def sort_folders(folder_path: str) -> list:
+def sort_folders_by_md_file_count(folder_path: str) -> list:
     """
-    Sort the folder names based on .md file counts in descending order.
-        Args:
-            folder_path (str): Path to the folder
-        Returns:
-            list: List of sorted folder names
+    Sort folders by the count of .md files within each, in descending order.
+    Args:
+        folder_path (str): The path to the main folder.
+    Returns:
+        list: A list of folder names, sorted by .md file count.
     """
-    # Get a list of folders within the specific folder
-    folder_list = [f for f in os.listdir(
-        folder_path) if os.path.isdir(os.path.join(folder_path, f))]
-
-    # Initialize a dictionary to store folder names and their respective .md file counts
-    md_file_counts = {}
-
-    for folder in folder_list:
-        folder_dir = os.path.join(folder_path, folder)
-        md_file_counts[folder] = md_file_count(folder_dir)
-
-    # Sort the folder names based on .md file counts in descending order
+    folders = [f for f in os.listdir(folder_path) if os.path.isdir(
+        os.path.join(folder_path, f))]
+    folder_md_count = {folder: get_md_file_count_in_folder(
+        os.path.join(folder_path, folder)) for folder in folders}
     sorted_folders = sorted(
-        md_file_counts, key=lambda x: md_file_counts[x], reverse=True)
-
+        folder_md_count, key=folder_md_count.get, reverse=True)
     return sorted_folders

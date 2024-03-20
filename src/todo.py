@@ -1,15 +1,12 @@
 import os
 import pyperclip
-from api import api_request
 from datetime import datetime
-from utils import sort_folders
-
-# Obsidian WorkNotes 폴더 경로
-OBSIDIAN_DIR = "C:\\Dev\\GoogleDrive\\Personal\\Obsidian\\10_WorkNotes\\"
+from .api import api_request
+from .utils import sort_folders_by_md_file_count as sort_folders
 
 
 class TodoMaker:
-    def __init__(self):
+    def __init__(self, OBSIDIAN_DIR):
         self.persons = None
         self.selectedPerson = None
         self.topClassName = None
@@ -21,6 +18,7 @@ class TodoMaker:
         self.dateDirName = datetime.now().strftime("%Y%m") + "_"
         self.todayYear = datetime.now().strftime("%Y")
         self.FIELD = sort_folders(OBSIDIAN_DIR)
+        self.OBSIDIAN_DIR = OBSIDIAN_DIR
 
     def show_person_info(self, persons: list) -> None:
         print()
@@ -109,7 +107,7 @@ class TodoMaker:
 
         try:
             subDir = sort_folders(os.path.join(
-                OBSIDIAN_DIR, self.topClassName))
+                self.OBSIDIAN_DIR, self.topClassName))
         except FileNotFoundError:
             subDir = []
 
@@ -125,7 +123,7 @@ class TodoMaker:
 
     def makeSubDivision(self):
         self.subDivisionName = input("단위 업무를 입력해주세요: ").strip()
-        self.complete_dir = os.path.join(OBSIDIAN_DIR, self.topClassName, self.subClassName,
+        self.complete_dir = os.path.join(self.OBSIDIAN_DIR, self.topClassName, self.subClassName,
                                          self.todayYear, self.dateDirName + self.subDivisionName)
 
     def makeTodoMD(self):
@@ -206,8 +204,3 @@ class TodoMaker:
         self.makeSubDivision()      # 업무별 제목 입력
         self.makeTodoFile()         # 실제 파일 생성
         self.copy_to_clipboard()    # 폴더 경로 클립보드에 복사
-
-
-if __name__ == "__main__":
-    todoMaker = TodoMaker()
-    todoMaker.run()
