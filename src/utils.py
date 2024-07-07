@@ -4,6 +4,7 @@ from tkinter import messagebox
 from src.config import CONFIG
 from src.api import api_request
 from datetime import datetime
+import pyperclip
 
 
 def validate_inputs(app):
@@ -88,6 +89,8 @@ def get_final_save_path(app):
 
     if not os.path.exists(final_dir):
         os.makedirs(final_dir)
+
+    pyperclip.copy(final_dir)
 
     return os.path.join(final_dir, '_' + app.entry_title.get().strip() + '.md')
 
