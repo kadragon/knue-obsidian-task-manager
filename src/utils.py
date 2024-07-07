@@ -36,7 +36,6 @@ def generate_content(app):
     schedule = app.entry_schedule.get('1.0', tk.END).strip()
 
     person_info = (
-        f"[[{person['username']}({person['userId']})]] "
         f"#부서/{person['buseo_nm']}/{person['jikwi']}_{person['username']} - "
         f"{conv_call(person['gyonae_no'])}"
     )

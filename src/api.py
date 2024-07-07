@@ -12,7 +12,7 @@ def api_request(query: str) -> dict:
         dict: JSON response from API.
     """
     params = {
-        "mode": "all",
+        "mode": "search",
         "type": "2",
         "name": query
     }
