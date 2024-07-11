@@ -12,14 +12,14 @@ def validate_inputs(app):
     입력 필드 유효성 검사
     """
     if not all([app.entry_title.get().strip(),
-                app.entry_related.get("1.0", tk.END).strip(),
+                # app.entry_related.get("1.0", tk.END).strip(),
                 app.entry_issues.get("1.0", tk.END).strip(),
                 app.entry_solution.get("1.0", tk.END).strip(),
-                app.entry_schedule.get("1.0", tk.END).strip(),
+                # app.entry_schedule.get("1.0", tk.END).strip(),
                 app.selected_person,
                 app.first_folder_combobox.get().strip(),
                 app.second_folder_combobox.get().strip()]):
-        messagebox.showwarning("입력 오류", "모든 필드를 입력해주세요.")
+        messagebox.showwarning("입력 오류", "현황 및 문제점, 해결 방안, 폴더, 대상자를 입력해주세요.")
         return False
     return True
 
@@ -40,6 +40,9 @@ def generate_content(app):
         f"#부서/{person['buseo_nm']}/{person['jikwi']}_{person['username']} - "
         f"{conv_call(person['gyonae_no'])}"
     )
+    folder_info = f"#업무/{app.first_folder_combobox.get()
+                         }/{app.second_folder_combobox.get()}"
+
     related = "\n".join(
         [f"- {x.strip()}" for x in related.split("\n")])
 
@@ -57,6 +60,7 @@ def generate_content(app):
 
 ## 🙋‍♂️ 관련
 - {person_info}
+- {folder_info}
 {related}
 
 ## 📢 현황 및 문제점
@@ -109,7 +113,6 @@ def clear_inputs(app):
     app.entry_title.delete(0, tk.END)
     for widget in [app.entry_related, app.entry_issues, app.entry_solution, app.entry_schedule]:
         widget.delete("1.0", tk.END)
-        widget.insert(tk.END, "- ")
     app.selected_person = None
     app.update_selected_person_label()
 
@@ -161,7 +164,7 @@ def get_first_depth_directories(base_dir):
     Returns:
         list: 첫 번째 depth 하위 디렉토리 이름 리스트
     """
-    return [d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))]
+    return sorted([d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))])
 
 
 def get_second_depth_directories(base_dir, first_depth_dir):
@@ -176,4 +179,4 @@ def get_second_depth_directories(base_dir, first_depth_dir):
         list: 두 번째 depth 하위 디렉토리 이름 리스트
     """
     first_depth_path = os.path.join(base_dir, first_depth_dir)
-    return [d for d in os.listdir(first_depth_path) if os.path.isdir(os.path.join(first_depth_path, d))]
+    return sorted([d for d in os.listdir(first_depth_path) if os.path.isdir(os.path.join(first_depth_path, d))])

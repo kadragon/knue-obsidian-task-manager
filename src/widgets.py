@@ -46,7 +46,7 @@ def create_folder_selection_frame(app, parent):
     ttk.Label(folder_frame, text="첫 번째 폴더",
               font=CONFIG['font']).pack(side=tk.LEFT)
     app.first_folder_combobox = ttk.Combobox(
-        folder_frame, font=CONFIG['font'], state='readonly', width=20)
+        folder_frame, font=CONFIG['font'], width=20)
     app.first_folder_combobox.pack(side=tk.LEFT, padx=(10, 20))
     app.first_folder_combobox.bind(
         "<<ComboboxSelected>>", lambda event: update_second_folder_combobox(app))

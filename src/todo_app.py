@@ -10,7 +10,7 @@ class TodoApp:
         """
         self.root = root
         self.root.title("업무노트 작성기")
-        self.root.geometry("600x700")
+        self.root.geometry("600x800")
         self.selected_person = None
         self.persons = None
 
