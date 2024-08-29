@@ -1,0 +1,69 @@
+import re
+import os
+
+
+def get_dir_list(base_dir):
+    return sorted([d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))])
+
+
+def count_md_files_in_folder(folder_path):
+    """
+    주어진 폴더 내의 모든 하위 폴더를 포함한 .md 파일을 재귀적으로 찾아서 개수를 반환합니다.
+    """
+    md_count = 0
+    for root, _, files in os.walk(folder_path):
+        # 모든 하위 폴더의 .md 파일을 포함하여 개수를 셉니다.
+        md_count += len([file for file in files if file.endswith('.md')])
+    return md_count
+
+
+def sort_folders_by_md_count(base_path):
+    """
+    특정 폴더 내의 1차 하위 폴더들을 .md 파일 개수를 기준으로 정렬합니다.
+    각 하위 폴더는 내부의 모든 .md 파일을 포함합니다.
+    """
+    # base_path의 1차 하위 폴더들을 가져옵니다.
+    subfolders = [os.path.join(base_path, folder) for folder in os.listdir(base_path)
+                  if os.path.isdir(os.path.join(base_path, folder))]
+
+    # 각 하위 폴더의 모든 내부 폴더를 포함한 .md 파일 개수를 계산합니다.
+    folder_md_counts = [(folder, count_md_files_in_folder(folder))
+                        for folder in subfolders]
+
+    # .md 파일 개수를 기준으로 폴더명을 정렬합니다.
+    sorted_folders = sorted(folder_md_counts, key=lambda x: x[1], reverse=True)
+
+    # 정렬된 결과에서 폴더명만 추출하여 반환합니다.
+    sorted_folder_names = [os.path.basename(
+        folder[0]) for folder in sorted_folders]
+
+    return sorted_folder_names
+
+
+def extract_tags_from_file(file_path):
+    """파일에서 태그를 추출하는 함수"""
+    tags = set()  # 중복 태그 방지를 위해 set 사용
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        # 정규 표현식을 사용하여 태그 추출
+        found_tags = re.findall(r'#부서\S+', content)
+        tags.update(found_tags)
+    return tags
+
+
+def extract_tags_from_directory(directory_path):
+    """디렉토리 내 모든 Markdown 파일에서 태그를 추출하는 함수"""
+    all_tags = set()  # 전체 태그를 저장할 set
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith('.md'):  # Markdown 파일만 처리
+                file_path = os.path.join(root, file)
+                tags = extract_tags_from_file(file_path)
+                all_tags.update(tags)
+    return sorted(list(all_tags))
+
+
+if __name__ == '__main__':
+    data = get_dir_list(
+        '/Users/kadragon/GDrive_Main/Obsidian/Work/10_WorkNotes')
+    print(data)
