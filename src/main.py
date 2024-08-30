@@ -3,11 +3,10 @@ import os
 
 import streamlit as st
 import pyperclip
-import werkzeug.utils
 from dotenv import load_dotenv
 
 
-from utils import extract_tags_from_directory, sort_folders_by_md_count
+from utils import extract_tags_from_directory, sort_folders_by_md_count, secure_filename_custom
 from lcop import get_analytic_result
 from pdf import read_pdf
 
@@ -53,7 +52,7 @@ def save_todo_file(final_dir, file_name, content):
         os.makedirs(final_dir)
 
     # 사용자 입력을 검증하여 안전한 파일 이름을 생성
-    safe_file_name = werkzeug.utils.secure_filename(file_name)
+    safe_file_name = secure_filename_custom(file_name)
 
     file_path = os.path.join(final_dir, safe_file_name)
 
