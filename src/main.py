@@ -5,11 +5,14 @@ import streamlit as st
 import pyperclip
 from dotenv import load_dotenv
 
-from src.os_utils import extract_tags_from_directory, sort_folders_by_md_count
+from utils import extract_tags_from_directory, sort_folders_by_md_count
+from lcop import get_analytic_result
+from pdf import read_pdf
 
 # Load environment variables
 load_dotenv()
 OBSIDIAN_DIR = os.getenv('OBSIDIAN_DIR')
+OPEN_AI_API = os.getenv('OPEN_AI_API')
 
 
 def get_today_date_formats():
@@ -76,26 +79,35 @@ def main():
     tags = st.selectbox('관련 태그 선택', [''] + extract_tags_from_directory(
         os.path.join(OBSIDIAN_DIR, first_class, second_class)))
 
-    todo_title = st.text_input('📝 업무 제목을 입력해주세요.')
+    todo_title_ai = ''
+
+    uploaded_file = st.file_uploader("공문을 업로드하세요 (PDF 형식)", type=("pdf"))
+    if uploaded_file:
+        pdf_text = read_pdf(uploaded_file)
+        ai_result = get_analytic_result(
+            pdf_text, OPEN_AI_API, f'#업무/{first_class}/{second_class}', tags)
+
+        todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
+
+    todo_title = st.text_input('📝 업무 제목을 입력해주세요.', todo_title_ai)
     if todo_title == '':
         return
 
-    content = generate_todo_content(
-        todo_title, first_class, second_class, todayDate, tags)
-    todo_content = st.text_area('📝 업무 내용을 입력해주세요.', content, height=400)
+    if ai_result is not None:
+        content = ai_result
+    else:
+        generate_todo_content(
+            todo_title, first_class, second_class, todayDate, tags)
 
-    if content == todo_content:
-        return
-
-    # Define the final directory path for the todo item
-    sanitized_title = todo_title.replace(' ', '_')
-    final_dir = os.path.join(OBSIDIAN_DIR, first_class, second_class, f'{
-                             todayYM}_{sanitized_title}')
-
-    st.info(f"저장될 경로: {final_dir}")
+    todo_content = st.text_area('📝 업무 내용을 입력해주세요.', content, height=600)
 
     if st.button('저장'):
+        sanitized_title = todo_title.replace(' ', '_')
+        final_dir = os.path.join(OBSIDIAN_DIR, first_class, second_class, f'{
+            todayYM}_{sanitized_title}')
+
         save_todo_file(final_dir, f'_{todo_title}.md', todo_content)
+        st.info(f"저장될 경로: {final_dir}")
 
 
 if __name__ == '__main__':

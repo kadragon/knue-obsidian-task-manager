@@ -3,3 +3,6 @@ pytest==8.2.2
 python-dotenv==1.0.1
 requests==2.31.0
 streamlit==1.38.0
+langchain_core
+langchain_openai
+PyPDF2
