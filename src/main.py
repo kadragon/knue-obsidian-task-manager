@@ -80,6 +80,7 @@ def main():
         os.path.join(OBSIDIAN_DIR, first_class, second_class)))
 
     todo_title_ai = ''
+    ai_result = ''
 
     uploaded_file = st.file_uploader("공문을 업로드하세요 (PDF 형식)", type=("pdf"))
     if uploaded_file:
@@ -93,10 +94,10 @@ def main():
     if todo_title == '':
         return
 
-    if ai_result is not None:
+    if ai_result != '':
         content = ai_result
     else:
-        generate_todo_content(
+        content = generate_todo_content(
             todo_title, first_class, second_class, todayDate, tags)
 
     todo_content = st.text_area('📝 업무 내용을 입력해주세요.', content, height=600)
