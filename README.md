@@ -1,6 +1,7 @@
 # KNUE Obsidian Task Manager
 
-이 프로그램은 한국교원대학교(KNUE) 구성원들이 Obsidian에서 사용할 수 있는 업무 관리 마크다운 파일을 생성합니다.
+- 이 프로그램은 Obsidian에서 사용할 수 있는 업무 관리 마크다운 파일을 생성합니다.
+- gpt를 활용해서 공문을 기반으로 할일을 생성 할 수도 있습니다.
 
 ## 기능
 
@@ -11,7 +12,6 @@
 3. 관련 내용
 4. 현황 및 문제점
 5. 해결 방안
-6. 향후 추진 일정
 
 ## 사용 방법
 
@@ -31,12 +31,23 @@
 ```bash
 git clone https://github.com/kadragon/knue-obsidian-task-manager.git
 cd knue-obsidian-task-manager
+python -m venv .venv
 pip install -r requirements.txt  # 의존성 패키지가 있는 경우
 ```
 
 ## 사용 예시
 
-python main.py
+### Windows
+
+```bash
+@echo off
+
+cd your_repo
+
+call .venv\Scripts\activate.bat
+streamlit run ./src/main.py
+```
+
 프로그램 실행 후, 요청되는 정보를 순서대로 입력하면 마크다운 파일이 생성됩니다.
 
 ## 기여
