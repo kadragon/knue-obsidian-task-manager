@@ -51,10 +51,7 @@ def save_todo_file(final_dir, file_name, content):
     if not os.path.exists(final_dir):
         os.makedirs(final_dir)
 
-    # 사용자 입력을 검증하여 안전한 파일 이름을 생성
-    safe_file_name = secure_filename_custom(file_name)
-
-    file_path = os.path.join(final_dir, safe_file_name)
+    file_path = os.path.join(final_dir, file_name)
 
     try:
         with open(file_path, 'w', encoding='utf-8') as file:
@@ -95,6 +92,10 @@ def main():
         todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
 
     todo_title = st.text_input('📝 업무 제목을 입력해주세요.', todo_title_ai)
+
+    # 사용자 입력이 파일명에 사용되기 떄문에 검증하여 안전한 제목 생성
+    todo_title = secure_filename_custom(todo_title)
+
     if todo_title == '':
         return
 
