@@ -63,7 +63,19 @@ def extract_tags_from_directory(directory_path):
     return sorted(list(all_tags))
 
 
-if __name__ == '__main__':
-    data = get_dir_list(
-        '/Users/kadragon/GDrive_Main/Obsidian/Work/10_WorkNotes')
-    print(data)
+def secure_filename_custom(file_name):
+    """
+    Custom function to sanitize file names while preserving Korean characters and alphanumerics.
+    Removes any potentially harmful characters like directory separators.
+    """
+    # 알파벳, 숫자, 한글, 마침표, 밑줄, 공백을 제외한 모든 문자를 제거
+    file_name = re.sub(r'[^a-zA-Z0-9가-힣._\s]', '', file_name)
+
+    # 연속된 공백을 하나의 공백으로 줄임
+    file_name = re.sub(r'\s+', ' ', file_name).strip()
+
+    # 만약 파일 이름이 비어 있거나 '.'로 시작하는 경우 'unnamed'로 대체
+    if not file_name or file_name.startswith('.'):
+        file_name = 'unnamed'
+
+    return file_name
