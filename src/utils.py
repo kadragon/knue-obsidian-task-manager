@@ -79,13 +79,3 @@ def secure_filename_custom(file_name):
         file_name = 'unnamed'
 
     return file_name
-
-
-safe_file_name = secure_filename_custom("_원자료 생성시 오류 발생(교류)")
-print(safe_file_name)
-
-
-if __name__ == '__main__':
-    data = get_dir_list(
-        '/Users/kadragon/GDrive_Main/Obsidian/Work/10_WorkNotes')
-    print(data)
