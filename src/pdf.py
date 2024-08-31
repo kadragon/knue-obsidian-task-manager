@@ -1,10 +1,10 @@
 from io import BytesIO
-import PyPDF2
+from pypdf import PdfReader
 
 
 def read_pdf(file):
     """PDF 파일의 텍스트를 추출하여 반환합니다."""
-    pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
+    pdf_reader = PdfReader(BytesIO(file.read()))
     text = ""
     for page in pdf_reader.pages:
         page_text = page.extract_text()
