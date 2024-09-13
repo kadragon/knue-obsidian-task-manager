@@ -79,3 +79,32 @@ def secure_filename_custom(file_name):
         file_name = 'unnamed'
 
     return file_name
+
+
+def save_todo_file(final_dir, file_name, content):
+    """Save the todo content to a file and copy the directory path to clipboard."""
+    if not os.path.exists(final_dir):
+        os.makedirs(final_dir)
+
+    file_path = os.path.join(final_dir, file_name)
+
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+
+        return True
+    except Exception:
+        return False
+
+
+def save_pdf_file(final_dir, file):
+    if not os.path.exists(final_dir):
+        os.makedirs(final_dir)
+
+    try:
+        with open(os.path.join(final_dir, file.name), 'wb') as f:
+            f.write(file.getbuffer())
+
+        return True
+    except:
+        return False
