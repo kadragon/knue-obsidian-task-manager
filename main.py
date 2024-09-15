@@ -6,9 +6,10 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 
-from src.utils import extract_tags_from_directory, sort_folders_by_md_count, secure_filename_custom, save_todo_file, save_pdf_file
+from src.utils import extract_tags_from_directory, sort_folders_by_md_count, secure_filename_custom, save_todo_file
 from src.lcop import get_analytic_result
-from src.pdf import read_pdf
+from src.pdf import read_pdf, save_pdf_file
+from src.vectorPinecone import VectorPinecone
 
 
 # Load environment variables
@@ -48,6 +49,8 @@ def generate_todo_content(todo_title, first_class, second_class, todayDate, tags
 
 
 def main():
+    vdp = VectorPinecone()
+
     st.set_page_config(layout="wide")
 
     st.title('Obsidian Task Maker')
@@ -113,6 +116,8 @@ def main():
         final_dir = os.path.join(OBSIDIAN_DIR, first_class, second_class, f'{
             todayYM}_{sanitized_title}')
 
+        todo_content += "\n\n" + vdp.get_reference(todo_content, type='source')
+
         if save_todo_file(final_dir, f'_{todo_title}.md', todo_content):
             st.toast('파일이 성공적으로 저장되었습니다!', icon='📂')
             col2.info(f"클립보드에 저장된 경로가 복사되었습니다.")
@@ -120,6 +125,8 @@ def main():
 
             if uploaded_file:
                 save_pdf_file(final_dir, uploaded_file)
+
+            vdp.upsert_recent()
         else:
             st.toast('파일 저장 중 오류가 발생했습니다.', icon='❌')
 

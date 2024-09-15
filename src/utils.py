@@ -1,5 +1,6 @@
 import re
 import os
+
 from src.vectorPinecone import VectorDatabasePinecone
 
 
@@ -95,21 +96,8 @@ def save_todo_file(final_dir, file_name, content):
 
         # 벡터 데이터베이스에 저장
         vdp = VectorDatabasePinecone()
-        vdp.upsert(file_path)
+        vdp.upsert_recent()
 
         return True
     except Exception:
-        return False
-
-
-def save_pdf_file(final_dir, file):
-    if not os.path.exists(final_dir):
-        os.makedirs(final_dir)
-
-    try:
-        with open(os.path.join(final_dir, file.name), 'wb') as f:
-            f.write(file.getbuffer())
-
-        return True
-    except:
         return False

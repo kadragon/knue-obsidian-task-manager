@@ -7,18 +7,13 @@ from langchain_core.prompts import PromptTemplate
 from src.vectorPinecone import VectorDatabasePinecone
 
 
-def get_reference(text):
-    vdp = VectorDatabasePinecone()
-    result = vdp.query(namespace="test", query=text)
-    reference = ''.join([r.metadata['content'] for r in result.matches])
-    return reference
-
-
 def get_analytic_result(text, classification, tag, is_official_document=True):
     openai_api_key = os.getenv("OPEN_AI_API")
 
     todayDT = datetime.today().strftime("%Y-%m-%d")
-    reference = get_reference(text)
+
+    vdp = VectorDatabasePinecone()
+    reference = vdp.get_reference(text, type='content')
 
     llm = ChatOpenAI(model_name="gpt-4o-mini",
                      temperature=0.2, openai_api_key=openai_api_key)

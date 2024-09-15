@@ -1,6 +1,8 @@
 from pinecone import Pinecone, ServerlessSpec
 from src.embedding import get_cached_embedder
 import os
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import hashlib
 
@@ -38,13 +40,41 @@ class VectorDatabasePinecone:
             self.index.upsert(
                 vectors=[
                     {
-                        "id": self._generate_id(filename.split("/")[-1]),
+                        "id": self._generate_id(filename.split("/")[-2]),
                         "values": self.embedder.embed_query(content),
                         "metadata": {"source": filename, "content": content}
                     }
                 ],
                 namespace="test"
             )
+
+    def _find_recent_md_files(self, folder_path):
+        # 현재 시간에서 1주일 전 시간 계산
+        one_week_ago = datetime.now() - timedelta(days=3)
+
+        recent_files = []
+
+        # 폴더 내 모든 파일 순회
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if file.endswith('.md'):
+                    file_path = os.path.join(root, file)
+                    # 파일의 최종 수정 시간 확인
+                    mod_time = os.path.getmtime(file_path)
+                    mod_datetime = datetime.fromtimestamp(mod_time)
+
+                    # 최근 1주일 내에 수정된 파일인지 확인
+                    if mod_datetime > one_week_ago:
+                        recent_files.append(file_path)
+
+        return recent_files
+
+    def upsert_recent(self):
+        recent_files = self._find_recent_md_files(os.getenv('OBSIDIAN_DIR'))
+
+        for file in recent_files:
+            print(file)
+            self.upsert(file)
 
     def query(self, namespace: str, query: str):
         query_vector = self.embedder.embed_query(query)
@@ -57,25 +87,27 @@ class VectorDatabasePinecone:
         )
         return query_response
 
+    def get_reference(text, type='source'):
+        result = self.query(namespace="test", query=text)
+
+        if type == 'source':
+            reference = '\n'.join(
+                [f'- [[{r.metadata['source']}]]' for r in result.matches])
+
+        elif type == 'content':
+            reference = ''.join([r.metadata['content']
+                                for r in result.matches])
+        return reference
+
 
 if __name__ == "__main__":
     vdp = VectorDatabasePinecone()
 
-    # filename = "/등록/출력물관리/202409_등록내역확인_고지서출력에서_현재학기_고지서가_안보임/_등록내역확인 고지서출력에서 현재학기 고지서가 안보임.md"
-
-    folder_path = os.getenv('OBSIDIAN_DIR') + '/전임교원공채/'
+    folder_path = os.getenv('OBSIDIAN_DIR')
 
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             if file.endswith('.md'):
                 filename = os.path.join(root, file)
-                # print(filename)
+                print(filename)
                 vdp.upsert(filename)
-
-    # result = vdp.query(namespace="test", query="등록금 고지서 납부확인서")
-
-    # for r in result.matches:
-    #     data = r.metadata['source']
-    #     make_markdown = f'[[{data[:-3]}]]'
-
-    #     print(make_markdown, '\n', r.metadata['content'])
