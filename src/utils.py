@@ -1,5 +1,6 @@
 import re
 import os
+from src.vectorPinecone import VectorDatabasePinecone
 
 
 def get_dir_list(base_dir):
@@ -91,6 +92,10 @@ def save_todo_file(final_dir, file_name, content):
     try:
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(content)
+
+        # 벡터 데이터베이스에 저장
+        vdp = VectorDatabasePinecone()
+        vdp.upsert(file_path)
 
         return True
     except Exception:

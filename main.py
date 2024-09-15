@@ -1,11 +1,15 @@
-from datetime import datetime
 import os
 import streamlit as st
 import pyperclip
+
+from datetime import datetime
+
 from dotenv import load_dotenv
-from utils import extract_tags_from_directory, sort_folders_by_md_count, secure_filename_custom, save_todo_file, save_pdf_file
-from lcop import get_analytic_result, get_analytic_result_use_text
-from pdf import read_pdf
+
+from src.utils import extract_tags_from_directory, sort_folders_by_md_count, secure_filename_custom, save_todo_file, save_pdf_file
+from src.lcop import get_analytic_result
+from src.pdf import read_pdf
+
 
 # Load environment variables
 load_dotenv()
@@ -62,7 +66,7 @@ def main():
     if second_class == '':
         return
 
-    tags = col1.selectbox('관련 태그 선택', [''] + extract_tags_from_directory(
+    tags = col1.selectbox('관련 담당자 선택', [''] + extract_tags_from_directory(
         os.path.join(OBSIDIAN_DIR, first_class, second_class)))
 
     todo_title_ai = ''
@@ -72,8 +76,8 @@ def main():
 
     if mail_text and ai_result == '':
         with st.spinner('입력된 내용을 분석하고 있습니다.'):
-            ai_result = get_analytic_result_use_text(
-                mail_text, OPEN_AI_API, f'#업무/{first_class}/{second_class}', tags)
+            ai_result = get_analytic_result(
+                mail_text, OPEN_AI_API, f'#업무/{first_class}/{second_class}', tags, is_official_document=False)
 
             todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
 
