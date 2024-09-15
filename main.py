@@ -15,7 +15,6 @@ from src.pdf import read_pdf
 load_dotenv()
 
 OBSIDIAN_DIR = os.getenv('OBSIDIAN_DIR')
-OPEN_AI_API = os.getenv('OPEN_AI_API')
 
 
 def get_today_date_formats():
@@ -77,7 +76,7 @@ def main():
     if mail_text and ai_result == '':
         with st.spinner('입력된 내용을 분석하고 있습니다.'):
             ai_result = get_analytic_result(
-                mail_text, OPEN_AI_API, f'#업무/{first_class}/{second_class}', tags, is_official_document=False)
+                mail_text, f'#업무/{first_class}/{second_class}', tags, is_official_document=False)
 
             todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
 
@@ -87,7 +86,7 @@ def main():
         with st.spinner('공문을 분석하고 있습니다.'):
             pdf_text = read_pdf(uploaded_file).split("접  수교")[0]
             ai_result = get_analytic_result(
-                pdf_text, OPEN_AI_API, f'#업무/{first_class}/{second_class}', tags)
+                pdf_text, f'#업무/{first_class}/{second_class}', tags)
 
             todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
 
