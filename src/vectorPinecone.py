@@ -1,7 +1,6 @@
 from pinecone import Pinecone, ServerlessSpec
 from src.embedding import get_cached_embedder
 import os
-import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import hashlib
@@ -37,6 +36,10 @@ class VectorDatabasePinecone:
         with open(file_path, "r", encoding="utf-8") as file:
             content = ''.join(file.read().split("---")[2:])
 
+            # 캐시된 벡터가 있으면 넘어감
+            if self.embedder.is_cached(content):
+                return
+
             self.index.upsert(
                 vectors=[
                     {
@@ -48,9 +51,9 @@ class VectorDatabasePinecone:
                 namespace="test"
             )
 
-    def _find_recent_md_files(self, folder_path):
-        # 현재 시간에서 1주일 전 시간 계산
-        one_week_ago = datetime.now() - timedelta(days=3)
+    def _find_recent_md_files(self, folder_path, days=7):
+        # 현재 시간에서 days 전 시간 계산
+        one_week_ago = datetime.now() - timedelta(days=days)
 
         recent_files = []
 
@@ -63,7 +66,7 @@ class VectorDatabasePinecone:
                     mod_time = os.path.getmtime(file_path)
                     mod_datetime = datetime.fromtimestamp(mod_time)
 
-                    # 최근 1주일 내에 수정된 파일인지 확인
+                    # 현재 시간에서 days 전 시간 이후에 수정된 파일인지 확인
                     if mod_datetime > one_week_ago:
                         recent_files.append(file_path)
 
@@ -73,21 +76,20 @@ class VectorDatabasePinecone:
         recent_files = self._find_recent_md_files(os.getenv('OBSIDIAN_DIR'))
 
         for file in recent_files:
-            print(file)
             self.upsert(file)
 
-    def query(self, namespace: str, query: str):
+    def query(self, namespace: str, query: str, top_k: int = 2):
         query_vector = self.embedder.embed_query(query)
         query_response = self.index.query(
             namespace=namespace,
             vector=query_vector,
-            top_k=2,
+            top_k=top_k,
             include_values=True,
             include_metadata=True
         )
         return query_response
 
-    def get_reference(text, type='source'):
+    def get_reference(self, text, type='source'):
         result = self.query(namespace="test", query=text)
 
         if type == 'source':
@@ -98,16 +100,3 @@ class VectorDatabasePinecone:
             reference = ''.join([r.metadata['content']
                                 for r in result.matches])
         return reference
-
-
-if __name__ == "__main__":
-    vdp = VectorDatabasePinecone()
-
-    folder_path = os.getenv('OBSIDIAN_DIR')
-
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            if file.endswith('.md'):
-                filename = os.path.join(root, file)
-                print(filename)
-                vdp.upsert(filename)

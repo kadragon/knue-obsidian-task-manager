@@ -1,7 +1,7 @@
 import pytest
 import os
 import tempfile
-from .src.utils import (
+from src.utils import (
     get_dir_list,
     count_md_files_in_folder,
     sort_folders_by_md_count,
