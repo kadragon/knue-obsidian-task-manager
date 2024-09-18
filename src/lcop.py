@@ -7,13 +7,13 @@ from langchain_core.prompts import PromptTemplate
 from src.vectorPinecone import VectorDatabasePinecone
 
 
-def get_analytic_result(text, classification, tag, is_official_document=True):
+def get_analytic_result(texts, classification, tag, is_official_document=True):
     openai_api_key = os.getenv("OPEN_AI_API")
 
     todayDT = datetime.today().strftime("%Y-%m-%d")
 
     vdp = VectorDatabasePinecone()
-    reference = vdp.get_reference(text, type='content')
+    reference = vdp.get_reference(texts, type='content')
 
     llm = ChatOpenAI(model_name="gpt-4o-mini",
                      temperature=0.2, openai_api_key=openai_api_key)
@@ -25,7 +25,7 @@ def get_analytic_result(text, classification, tag, is_official_document=True):
 
 1. Provide a summary in the following format:
 
-# {title_type} (원문의 {document_type} {title_type}을 분석해서 주요 제목 추출하는데 10단어 내외로 요약)
+# 제목 (원문의 {document_type} {title_type}을 분석해서 주요 제목 추출하는데 10단어 내외로 요약)
 
 ## 🙋‍♂️ 관련 (아래 내용 반드시 추가)
 - {{classification}}
@@ -47,13 +47,15 @@ def get_analytic_result(text, classification, tag, is_official_document=True):
 ## 🛠 해결 방안
 - 문서에서 명시적으로 언급된 후속 조치나 할일 사항을 나열
 - 후속 조치 사항이 없는 경우 해결 방안 절을 생략
-- 명확한 날짜 제한이 없다면 {todayDT}로 설정
+- 명확한 날짜 제한이 없다면 {{todayDT}}로 설정
 - 이전 업무 노트도 참고해서 해결 방안을 작성
 - 예시:
-  - [ ] 할일 1 📅 YYYY-MM-DD ➕ {todayDT}
-  - [ ] 할일 2 📅 YYYY-MM-DD ➕ {todayDT}
+  - [ ] 할일 1 📅 YYYY-MM-DD ➕ {{todayDT}}
+  - [ ] 할일 2 📅 YYYY-MM-DD ➕ {{todayDT}}
 
 {additional_instructions}
+
+이 지침을 바탕으로 아래 내용과 이전 업무 노트를 참고해서 업무 노트를 작성해 주세요.
 
 3. Carefully analyze the following text:
 {{texts}}
@@ -70,24 +72,30 @@ def get_analytic_result(text, classification, tag, is_official_document=True):
 - 제시된 공문의 하단에 있는 공문 번호
 - 형식: [[부서명-문서번호(YYYY.m.d)]]
 - 발신처, 문서번호, 날짜 사이에 띄어쓰기를 하지 않음
-
-이 지침을 바탕으로 {document_type}와 이전 업무 노트를 참고해서 업무 노트를 작성해 주세요.
 """
     else:
         document_type = "요청"
         title_type = "할일 제목"
-        additional_instructions = "이 지침을 바탕으로 요청을 분석하고 업무 노트를 작성해 주세요."
+        additional_instructions = ""
 
-    prompt = PromptTemplate.from_template(template.format(
+    # 여기서 format 메서드를 사용하여 템플릿에 변수를 삽입합니다.
+    formatted_template = template.format(
         document_type=document_type,
         title_type=title_type,
-        additional_instructions=additional_instructions,
-        todayDT=todayDT
-    ))
+        additional_instructions=additional_instructions
+    )
+
+    prompt = PromptTemplate.from_template(formatted_template)
 
     chain = prompt | llm
 
-    response = chain.invoke(
-        {"texts": text, "classification": classification, "tag": tag, "todayDT": todayDT, "reference": reference})
+    # invoke 메서드에 전달하는 변수들을 수정합니다.
+    response = chain.invoke({
+        "texts": texts,
+        "classification": classification,
+        "tag": tag,
+        "todayDT": todayDT,
+        "reference": reference
+    })
 
     return response.content
