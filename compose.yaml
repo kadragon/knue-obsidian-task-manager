@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  obsidian-task-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - ${OBSIDIAN_DIR}:/obsidian
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
