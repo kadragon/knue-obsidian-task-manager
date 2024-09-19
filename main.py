@@ -15,7 +15,7 @@ from src.vectorPinecone import VectorDatabasePinecone
 # Load environment variables
 load_dotenv()
 
-OBSIDIAN_DIR = os.getenv('OBSIDIAN_DIR')
+OBSIDIAN_DIR = '/obsidian'
 
 
 def get_today_date_formats():
@@ -128,6 +128,9 @@ def main():
                 save_pdf_file(final_dir, uploaded_file)
 
             vdp.upsert_recent()
+
+            # 저장 성공 후 앱 재실행
+            st.experimental_rerun()
         else:
             st.toast('파일 저장 중 오류가 발생했습니다.', icon='❌')
 
