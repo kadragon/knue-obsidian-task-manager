@@ -7,6 +7,8 @@ import hashlib
 
 load_dotenv()
 
+OBSIDIAN_DIR = '/obsidian'
+
 
 class VectorDatabasePinecone:
     def __init__(self, index_name: str = "task-manager-index"):
@@ -31,7 +33,7 @@ class VectorDatabasePinecone:
 
     def upsert(self, file_path):
         filename = '10_WorkNotes' + \
-            file_path.replace(os.getenv('OBSIDIAN_DIR'), '')
+            file_path.replace(OBSIDIAN_DIR, '')
 
         with open(file_path, "r", encoding="utf-8") as file:
             content = ''.join(file.read().split("---")[2:])
@@ -73,7 +75,7 @@ class VectorDatabasePinecone:
         return recent_files
 
     def upsert_recent(self):
-        recent_files = self._find_recent_md_files(os.getenv('OBSIDIAN_DIR'))
+        recent_files = self._find_recent_md_files(OBSIDIAN_DIR)
 
         for file in recent_files:
             self.upsert(file)
