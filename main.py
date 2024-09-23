@@ -48,12 +48,23 @@ def generate_todo_content(todo_title, first_class, second_class, todayDate, tags
     """
 
 
+def reset_session_state():
+    """Reset the session state."""
+    if 'ai_result' not in st.session_state:
+        st.session_state.ai_result = ''
+    if 'todo_title_ai' not in st.session_state:
+        st.session_state.todo_title_ai = ''
+
+
 def main():
     vdp = VectorDatabasePinecone()
 
     st.set_page_config(layout="wide")
 
     st.title('Obsidian Task Maker')
+
+    # 세션 상태 초기화
+    reset_session_state()
 
     col1, col2 = st.columns(2)
 
@@ -71,31 +82,31 @@ def main():
     tags = col1.selectbox('관련 담당자 선택', [''] + extract_tags_from_directory(
         os.path.join(OBSIDIAN_DIR, first_class, second_class)))
 
-    todo_title_ai = ''
-    ai_result = ''
-
     mail_text = col1.text_area('메일(등) 내용', height=100)
 
-    if mail_text and ai_result == '':
+    if mail_text and st.session_state.ai_result == '':
         with st.spinner('입력된 내용을 분석하고 있습니다.'):
-            ai_result = get_analytic_result(
+            st.session_state.ai_result = get_analytic_result(
                 mail_text, f'#업무/{first_class}/{second_class}', tags, is_official_document=False)
 
-            todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
+            st.session_state.todo_title_ai = st.session_state.ai_result.split("\n")[
+                0].replace('# ', '')
 
     uploaded_file = col1.file_uploader(
         "공문 분석이 필요 할 경우 업로드하세요 (PDF 형식)", type=("pdf"))
-    if uploaded_file and ai_result == '':
+    if uploaded_file and st.session_state.ai_result == '':
         with st.spinner('공문을 분석하고 있습니다.'):
             pdf_text = read_pdf(uploaded_file).split("접  수교")[0]
-            ai_result = get_analytic_result(
+            st.session_state.ai_result = get_analytic_result(
                 pdf_text, f'#업무/{first_class}/{second_class}', tags)
 
-            todo_title_ai = ai_result.split("\n")[0].replace('# ', '')
+            st.session_state.todo_title_ai = st.session_state.ai_result.split("\n")[
+                0].replace('# ', '')
 
             col1.text_area("공문 내용", pdf_text, height=210)
 
-    todo_title = col2.text_input('📝 업무 제목을 입력해주세요.', todo_title_ai)
+    todo_title = col2.text_input(
+        '📝 업무 제목을 입력해주세요.', st.session_state.todo_title_ai)
 
     # 사용자 입력이 파일명에 사용되기 떄문에 검증하여 안전한 제목 생성
     todo_title = secure_filename_custom(todo_title)
@@ -103,8 +114,8 @@ def main():
     if todo_title == '':
         return
 
-    if ai_result != '':
-        content = ai_result
+    if st.session_state.ai_result != '':
+        content = st.session_state.ai_result
     else:
         content = generate_todo_content(
             todo_title, first_class, second_class, todayDate, tags)
@@ -128,9 +139,6 @@ def main():
                 save_pdf_file(final_dir, uploaded_file)
 
             vdp.upsert_recent()
-
-            # 저장 성공 후 앱 재실행
-            st.experimental_rerun()
         else:
             st.toast('파일 저장 중 오류가 발생했습니다.', icon='❌')
 
