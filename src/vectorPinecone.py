@@ -38,14 +38,10 @@ class VectorDatabasePinecone:
         with open(file_path, "r", encoding="utf-8") as file:
             content = ''.join(file.read().split("---")[2:])
 
-            # 캐시된 벡터가 있으면 넘어감
-            if self.embedder.is_cached(content):
-                return
-
             self.index.upsert(
                 vectors=[
                     {
-                        "id": self._generate_id(filename.split("/")[-2]),
+                        "id": self._generate_id(self._get_last_folder(filename)),
                         "values": self.embedder.embed_query(content),
                         "metadata": {"source": filename, "content": content}
                     }
@@ -74,8 +70,13 @@ class VectorDatabasePinecone:
 
         return recent_files
 
+    def _get_last_folder(self, path):
+        directory = os.path.dirname(path)
+        last_folder = os.path.basename(directory)
+        return last_folder
+
     def upsert_recent(self):
-        recent_files = self._find_recent_md_files(OBSIDIAN_DIR)
+        recent_files = self._find_recent_md_files(OBSIDIAN_DIR, 3)
 
         for file in recent_files:
             self.upsert(file)
@@ -96,9 +97,14 @@ class VectorDatabasePinecone:
 
         if type == 'source':
             reference = '\n'.join(
-                [f'- [[{r.metadata['source']}]]' for r in result.matches])
+                [f'- [[{r.metadata["source"]}]]' for r in result.matches])
 
         elif type == 'content':
             reference = ''.join([r.metadata['content']
                                 for r in result.matches])
         return reference
+
+
+if __name__ == '__main__':
+    vdp = VectorDatabasePinecone()
+    vdp.upsert_recent()
