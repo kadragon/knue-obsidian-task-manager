@@ -1,6 +1,5 @@
 import os
 import streamlit as st
-import pyperclip
 
 from datetime import datetime
 
@@ -132,8 +131,7 @@ def main():
 
         if save_todo_file(final_dir, f'_{todo_title}.md', todo_content):
             st.toast('파일이 성공적으로 저장되었습니다!', icon='📂')
-            col2.info(f"클립보드에 저장된 경로가 복사되었습니다.")
-            pyperclip.copy(final_dir)
+            col2.info(f"저장 폴더 위치: {final_dir}")
 
             if uploaded_file:
                 save_pdf_file(final_dir, uploaded_file)
